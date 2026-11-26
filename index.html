@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#6b3f52">
+<meta name="description" content="ADAA Manager pricing and profit calculator">
+<link rel="manifest" href="manifest.webmanifest">
+<title>ADAA Manager</title>
+<style>
+:root{--ink:#30252b;--muted:#776a70;--accent:#75465b;--accent2:#a56d82;--bg:#f7f2f3;--card:#fff;--line:#eadfe3;--good:#24744d;--bad:#b33d45}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px system-ui,-apple-system,Segoe UI,sans-serif}
+header{background:linear-gradient(135deg,#60374b,#93647a);color:white;padding:24px 20px 26px;border-radius:0 0 24px 24px}
+.brand{font-size:12px;letter-spacing:.22em;opacity:.8;font-weight:700}.title{font-size:27px;font-weight:800;margin:5px 0}.sub{font-size:13px;opacity:.85}
+main{max-width:680px;margin:auto;padding:16px 14px 36px}.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:17px;margin:0 0 14px;box-shadow:0 4px 18px #4b26300a}
+h2{font-size:17px;margin:0 0 14px}.field{margin:12px 0}.field label{display:block;font-size:13px;color:var(--muted);font-weight:650;margin-bottom:6px}
+input{width:100%;border:1px solid var(--line);background:#fff;border-radius:11px;padding:13px;font-size:17px;color:var(--ink);outline:none}
+input:focus{border-color:var(--accent2);box-shadow:0 0 0 3px #a56d8220}
+.quick{display:flex;gap:8px;flex-wrap:wrap}.quick button,.btn{border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:10px;padding:10px 13px;font-weight:700;font-size:14px}
+.quick button.active{background:#f1e5ea;border-color:#c9a9b7;color:var(--accent)}
+.results{background:#faf6f7;border-radius:14px;padding:14px;margin-top:12px}.resultrow{display:flex;justify-content:space-between;gap:12px;padding:8px 0;font-size:14px}.resultrow strong{font-variant-numeric:tabular-nums}
+.big{border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:4px}.big small{display:block;color:var(--muted);font-size:12px;font-weight:700;letter-spacing:.06em}.big strong{font-size:29px;color:var(--accent)}
+.profit{color:var(--good)}.loss{color:var(--bad)}.status{display:inline-block;padding:6px 10px;border-radius:20px;background:#e8f4ed;color:var(--good);font-size:12px;font-weight:750;margin-top:8px}.status.warn{background:#fff0e2;color:#9a5b17}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.primary{background:var(--accent);color:white;border:0;border-radius:11px;padding:12px 15px;font-weight:750;font-size:14px;flex:1}
+.secondary{background:#fff;border:1px solid var(--line);border-radius:11px;padding:12px 14px;font-weight:700}
+.note{font-size:12px;color:var(--muted);line-height:1.5}.record{border-top:1px solid var(--line);padding:12px 0}.recordtop{display:flex;justify-content:space-between;gap:10px}.record small{color:var(--muted)}.delete{border:0;background:#f9e9eb;color:#a33d4a;border-radius:8px;padding:6px 9px}
+footer{text-align:center;color:var(--muted);font-size:11px;padding:10px}
+</style>
+</head>
+<body>
+<header><div class="brand">ADAA CLOTHING</div><div class="title">ADAA Manager</div><div class="sub">Simple pricing · Clear profit · Your shop, organised</div></header>
+<main>
+<section class="card">
+<h2>Product pricing</h2>
+<div class="field"><label for="name">Product name (optional)</label><input id="name" placeholder="e.g. Printed kurti"></div>
+<div class="field"><label for="mrp">Printed MRP (₹) — enter this first</label><input id="mrp" type="number" min="0" step="0.01" inputmode="decimal" placeholder="Enter MRP"></div>
+<div class="field"><label>Customer discount</label><div class="quick" id="discounts">
+<button data-discount="5">5%</button><button data-discount="10" class="active">10%</button><button data-discount="15">15%</button><button data-discount="20">20%</button>
+</div></div>
+<div class="field"><label for="selling">Selling price (editable)</label><input id="selling" type="number" min="0" step="0.01" inputmode="decimal"></div>
+<div class="results">
+<div class="resultrow"><span>Estimated buying cost</span><strong id="cost">₹0.00</strong></div>
+<div class="resultrow"><span>Discount amount</span><strong id="discountAmount">₹0.00</strong></div>
+<div class="resultrow big"><div><small>FINAL SELLING PRICE</small><strong id="finalPrice">₹0.00</strong></div></div>
+<div class="resultrow"><span>Gross profit</span><strong id="profit">₹0.00</strong></div>
+<div class="resultrow"><span>Profit margin on selling price</span><strong id="margin">0.00%</strong></div>
+<div class="resultrow"><span>Profit on buying cost</span><strong id="markup">0.00%</strong></div>
+<div id="status" class="status warn">Enter an MRP to begin</div>
+</div>
+<div class="actions">
+<button class="primary" id="save">Save product</button>
+<button class="secondary" id="reset">Reset</button>
+</div>
+<p class="note">Buying cost is estimated as MRP ÷ 1.70 (70% markup). Changing the selling price updates profit automatically. Gross profit does not deduct shop expenses.</p>
+</section>
+<section class="card">
+<h2>Saved products <span id="count" class="note">(0)</span></h2>
+<div id="records"><p class="note">Your saved products will appear here on this device.</p></div>
+<div class="actions"><button class="secondary" id="export">Export CSV</button><button class="secondary" id="clear">Clear all records</button></div>
+<p class="note">Records are stored on this device/browser. Export a CSV backup regularly. Clearing browser data may remove saved records.</p>
+</section>
+<footer>ADAA Manager · Pricing assumption: 70% markup on buying cost</footer>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+let discount=10, manual=false;
+const money=n=>'₹'+(Number.isFinite(n)?n:0).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2});
+const num=id=>Math.max(0,Number($(id).value)||0);
+let records=JSON.parse(localStorage.getItem('adaaRecords')||'[]');
+function calculate(){
+ const mrp=num('mrp'), cost=mrp/1.7, suggested=mrp*(1-discount/100);
+ if(!manual || $('selling').value==='') $('selling').value=mrp?suggested.toFixed(2):'';
+ const sale=num('selling'), profit=sale-cost, margin=sale?profit/sale*100:0, markup=cost?profit/cost*100:0;
+ $('cost').textContent=money(cost);$('discountAmount').textContent=money(mrp*discount/100);
+ $('finalPrice').textContent=money(sale);$('profit').textContent=money(profit);
+ $('margin').textContent=margin.toFixed(2)+'%';$('markup').textContent=markup.toFixed(2)+'%';
+ $('profit').className=profit>=0?'profit':'loss';
+ const s=$('status');
+ if(!mrp){s.textContent='Enter an MRP to begin';s.className='status warn'}
+ else if(margin>=30 && margin<=35){s.textContent='Within your 30–35% target';s.className='status'}
+ else if(margin>35){s.textContent='Above your target range';s.className='status'}
+ else{s.textContent='Below your 30% target';s.className='status warn'}
+}
+$('mrp').addEventListener('input',()=>{manual=false;calculate()});
+$('selling').addEventListener('input',()=>{manual=true;calculate()});
+document.querySelectorAll('[data-discount]').forEach(b=>b.addEventListener('click',()=>{
+ discount=Number(b.dataset.discount);manual=false;
+ document.querySelectorAll('[data-discount]').forEach(x=>x.classList.toggle('active',x===b));calculate();
+}));
+function render(){
+ $('count').textContent='('+records.length+')';
+ $('records').innerHTML=records.length?'':'<p class="note">Your saved products will appear here on this device.</p>';
+ records.forEach((r,i)=>{
+  const div=document.createElement('div');div.className='record';
+  const top=document.createElement('div');top.className='recordtop';
+  const info=document.createElement('div');
+  const name=document.createElement('strong');name.textContent=r.name||'Unnamed product';
+  const details=document.createElement('div');details.innerHTML=`<small>MRP ${money(r.mrp)} · Cost ${money(r.cost)} · Sale ${money(r.sale)}<br>Profit ${money(r.profit)} · Margin ${r.margin.toFixed(2)}%</small>`;
+  info.append(name,details);
+  const del=document.createElement('button');del.className='delete';del.textContent='Delete';del.onclick=()=>{records.splice(i,1);persist()};
+  top.append(info,del);div.append(top);$('records').append(div);
+ });
+}
+function persist(){localStorage.setItem('adaaRecords',JSON.stringify(records));render()}
+$('save').onclick=()=>{
+ const mrp=num('mrp');if(!mrp){alert('Please enter an MRP first.');return}
+ const cost=mrp/1.7,sale=num('selling'),profit=sale-cost;
+ records.unshift({name:$('name').value.trim(),mrp,cost,sale,profit,margin:sale?profit/sale*100:0});
+ persist();alert('Product saved on this device.');
+};
+$('reset').onclick=()=>{$('name').value='';$('mrp').value='';$('selling').value='';manual=false;discount=10;document.querySelectorAll('[data-discount]').forEach(b=>b.classList.toggle('active',b.dataset.discount==='10'));calculate()};
+$('clear').onclick=()=>{if(confirm('Delete all saved product records from this device?')){records=[];persist()}};
+$('export').onclick=()=>{
+ const rows=[['Product','MRP','Estimated buying cost','Selling price','Gross profit','Profit margin %'],...records.map(r=>[r.name,r.mrp,r.cost,r.sale,r.profit,r.margin.toFixed(2)])];
+ const csv=rows.map(row=>row.map(v=>'"'+String(v??'').replaceAll('"','""')+'"').join(',')).join('\n');
+ const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='adaa-products.csv';a.click();URL.revokeObjectURL(a.href);
+};
+calculate();render();
+if('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('./sw.js').catch(()=>{});
+</script>
+</body></html>
